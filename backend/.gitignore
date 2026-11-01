@@ -1,0 +1,28 @@
+# Binaries for programs and tests
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+server
+server.exe
+test_build.exe
+
+# Output of the go coverage tool
+*.coverprofile
+coverage.out
+
+# Dependency directories
+vendor/
+
+# Environment file
+.env
+!.env.example
+
+# Temporary generated files
+*.pdf
+tmp/
+temp/
+
