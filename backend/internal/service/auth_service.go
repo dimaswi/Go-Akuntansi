@@ -30,17 +30,9 @@ func (s *authService) Login(nip, password string) (string, *model.User, error) {
 		return "", nil, errors.New("NIP atau kata sandi tidak sesuai")
 	}
 
-	// Cek kata sandi: cocokkan bcrypt atau jika default developer password "12345" / "admin"
-	errBcrypt := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
-	if errBcrypt != nil {
-		if password == "12345" || password == "admin" || password == "password" {
-			// Beri kemudahan login dev dan perbarui hash
-			newHash, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-			user.Password = string(newHash)
-			_ = s.userRepo.Update(user)
-		} else {
-			return "", nil, errors.New("NIP atau kata sandi tidak sesuai")
-		}
+	// Verifikasi kata sandi dengan hash bcrypt
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+		return "", nil, errors.New("NIP atau kata sandi tidak sesuai")
 	}
 
 	roleName := "user"
@@ -66,11 +58,8 @@ func (s *authService) ChangePassword(userID uint, oldPassword, newPassword strin
 		return errors.New("pengguna tidak ditemukan")
 	}
 
-	errBcrypt := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(oldPassword))
-	if errBcrypt != nil {
-		if oldPassword != "12345" && oldPassword != "admin" && oldPassword != "password" {
-			return errors.New("kata sandi saat ini tidak sesuai")
-		}
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(oldPassword)); err != nil {
+		return errors.New("kata sandi saat ini tidak sesuai")
 	}
 
 	if len(newPassword) < 5 {

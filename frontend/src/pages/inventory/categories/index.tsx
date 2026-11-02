@@ -39,7 +39,7 @@ export const InventoryCategoriesIndex: React.FC = () => {
             setLoading(true);
             const res = await inventoryApi.getCategories();
             if (res.data?.success) {
-                const raw = res.data.data;
+                const raw: any = res.data.data;
                 setCategories(Array.isArray(raw) ? raw : (Array.isArray(raw?.data) ? raw.data : []));
             }
         } catch (err) {
