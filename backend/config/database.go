@@ -369,6 +369,23 @@ func NormalizeDatabaseSchema(db *gorm.DB) {
 	} else if hasTotalRealized && hasRealizedAmountBudget {
 		_ = db.Exec(`UPDATE "asset_budgets" SET "total_realized" = "realized_amount" WHERE ("total_realized" IS NULL OR "total_realized" = 0) AND "realized_amount" > 0`).Error
 	}
+
+	// 7. Bersihkan duplikasi data permission dan relasi role_permission, serta pasang unique constraint
+	_ = db.Exec(`DELETE FROM permissions a USING permissions b WHERE a.id > b.id AND a.name = b.name`).Error
+
+	var hasRolePermissionTable bool
+	db.Raw(`SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'role_permission')`).Scan(&hasRolePermissionTable)
+	if hasRolePermissionTable {
+		_ = db.Exec(`DELETE FROM role_permission a USING role_permission b WHERE a.id > b.id AND a.role_id = b.role_id AND a.permission_id = b.permission_id`).Error
+		_ = db.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_role_permission_role_perm ON role_permission (role_id, permission_id)`).Error
+	}
+
+	var hasRolePermissionsTable bool
+	db.Raw(`SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'role_permissions')`).Scan(&hasRolePermissionsTable)
+	if hasRolePermissionsTable {
+		_ = db.Exec(`DELETE FROM role_permissions a USING role_permissions b WHERE a.ctid > b.ctid AND a.role_id = b.role_id AND a.permission_id = b.permission_id`).Error
+		_ = db.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_role_permissions_role_perm ON role_permissions (role_id, permission_id)`).Error
+	}
 }
 
 // SeedDashboardPermissions mendaftarkan permission untuk setiap card pada dashboard utama.
@@ -421,15 +438,25 @@ func SeedDashboardPermissions(db *gorm.DB) {
 	}
 
 	// Berikan permission ke role admin dan logistics jika ada
+	hasRolePermissionsTable := db.Migrator().HasTable("role_permissions")
 	var adminRole model.Role
 	if err := db.Where("name = ?", "admin").First(&adminRole).Error; err == nil {
 		for i := range perms {
 			var perm model.Permission
 			if err := db.Where("name = ?", perms[i].Name).First(&perm).Error; err == nil {
+				// role_permission
 				var count int64
-				db.Table("role_permissions").Where("role_id = ? AND permission_id = ?", adminRole.ID, perm.ID).Count(&count)
+				db.Table("role_permission").Where("role_id = ? AND permission_id = ?", adminRole.ID, perm.ID).Count(&count)
 				if count == 0 {
-					db.Exec("INSERT INTO role_permissions (role_id, permission_id) VALUES (?, ?)", adminRole.ID, perm.ID)
+					db.Exec("INSERT INTO role_permission (role_id, permission_id) VALUES (?, ?)", adminRole.ID, perm.ID)
+				}
+				// role_permissions (jika ada variasi tabel)
+				if hasRolePermissionsTable {
+					var countLegacy int64
+					db.Table("role_permissions").Where("role_id = ? AND permission_id = ?", adminRole.ID, perm.ID).Count(&countLegacy)
+					if countLegacy == 0 {
+						db.Exec("INSERT INTO role_permissions (role_id, permission_id) VALUES (?, ?)", adminRole.ID, perm.ID)
+					}
 				}
 			}
 		}
@@ -441,9 +468,16 @@ func SeedDashboardPermissions(db *gorm.DB) {
 				var perm model.Permission
 				if err := db.Where("name = ?", perms[i].Name).First(&perm).Error; err == nil {
 					var count int64
-					db.Table("role_permissions").Where("role_id = ? AND permission_id = ?", logRole.ID, perm.ID).Count(&count)
+					db.Table("role_permission").Where("role_id = ? AND permission_id = ?", logRole.ID, perm.ID).Count(&count)
 					if count == 0 {
-						db.Exec("INSERT INTO role_permissions (role_id, permission_id) VALUES (?, ?)", logRole.ID, perm.ID)
+						db.Exec("INSERT INTO role_permission (role_id, permission_id) VALUES (?, ?)", logRole.ID, perm.ID)
+					}
+					if hasRolePermissionsTable {
+						var countLegacy int64
+						db.Table("role_permissions").Where("role_id = ? AND permission_id = ?", logRole.ID, perm.ID).Count(&countLegacy)
+						if countLegacy == 0 {
+							db.Exec("INSERT INTO role_permissions (role_id, permission_id) VALUES (?, ?)", logRole.ID, perm.ID)
+						}
 					}
 				}
 			}

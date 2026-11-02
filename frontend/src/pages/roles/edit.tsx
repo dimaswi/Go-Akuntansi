@@ -49,7 +49,7 @@ export default function RoleEditPage() {
                     setDisplayName(r.display_name || '');
                     setDescription(r.description || '');
                     if (r.permissions && Array.isArray(r.permissions)) {
-                        setSelectedPerms(r.permissions.map((p: any) => p.id));
+                        setSelectedPerms(Array.from(new Set(r.permissions.map((p: any) => p.id))));
                     }
                 }
             })
@@ -109,7 +109,10 @@ export default function RoleEditPage() {
         }
     };
 
-    const permsByModule = permissions.reduce<Record<string, PermissionItem[]>>((acc, p) => {
+    const uniquePermissions = permissions.filter(
+        (p, idx, self) => idx === self.findIndex((t) => (p.id && t.id === p.id) || t.name === p.name)
+    );
+    const permsByModule = uniquePermissions.reduce<Record<string, PermissionItem[]>>((acc, p) => {
         const mod = p.module || 'Umum';
         if (!acc[mod]) acc[mod] = [];
         acc[mod].push(p);

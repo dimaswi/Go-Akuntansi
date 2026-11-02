@@ -44,6 +44,8 @@ func AuthMiddleware(db *gorm.DB) gin.HandlerFunc {
 
 		c.Set("currentUser", user)
 		c.Set("currentUserID", user.ID)
+		c.Set("user_id", user.ID)
+		c.Set("userID", user.ID)
 		c.Set("userRole", claims.Role)
 		c.Next()
 	}

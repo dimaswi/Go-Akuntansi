@@ -21,6 +21,11 @@ func NewSalaryHandler(service service.SalaryService) *SalaryHandler {
 }
 
 func getUserID(c *gin.Context) uint {
+	if uid, exists := c.Get("currentUserID"); exists {
+		if id, ok := uid.(uint); ok {
+			return id
+		}
+	}
 	if uid, exists := c.Get("user_id"); exists {
 		if id, ok := uid.(uint); ok {
 			return id
@@ -31,11 +36,22 @@ func getUserID(c *gin.Context) uint {
 			return id
 		}
 	}
-	return 1
+	if val, exists := c.Get("currentUser"); exists {
+		if u, ok := val.(model.User); ok {
+			return u.ID
+		}
+		if u, ok := val.(*model.User); ok {
+			return u.ID
+		}
+	}
+	return 0
 }
 
 func getUserNIP(c *gin.Context) string {
 	if val, exists := c.Get("currentUser"); exists {
+		if u, ok := val.(model.User); ok {
+			return u.NIP
+		}
 		if u, ok := val.(*model.User); ok {
 			return u.NIP
 		}
@@ -252,6 +268,19 @@ func (h *SalaryHandler) GetPersonalSalarySlips(c *gin.Context) {
 	userNIP := getUserNIP(c)
 	year := c.Query("period_year")
 	month := c.Query("period_month")
+
+	if userID == 0 && userNIP == "" {
+		c.JSON(http.StatusOK, gin.H{
+			"success": true,
+			"data":    []interface{}{},
+			"summary": gin.H{
+				"total_slips":       0,
+				"total_gaji_bersih": 0,
+				"latest_period":     "",
+			},
+		})
+		return
+	}
 
 	slips, summary, err := h.service.GetPersonalSalarySlips(userID, userNIP, year, month)
 	if err != nil {

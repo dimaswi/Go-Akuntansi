@@ -32,6 +32,7 @@ import AkuntansiIndex from '@/pages/akuntansi/index';
 import DaftarAkunIndex from '@/pages/akuntansi/daftar-akun/index';
 import DaftarAkunCreate from '@/pages/akuntansi/daftar-akun/create';
 import DaftarAkunEdit from '@/pages/akuntansi/daftar-akun/edit';
+import DaftarAkunShow from '@/pages/akuntansi/daftar-akun/show';
 import JurnalIndex from '@/pages/akuntansi/jurnal/index';
 import JurnalCreate from '@/pages/akuntansi/jurnal/create';
 import JurnalEdit from '@/pages/akuntansi/jurnal/edit';
@@ -188,9 +189,10 @@ export const App: React.FC = () => {
                         <Route path="/" element={<AkuntansiIndex />} />
                         <Route path="/akuntansi" element={<AkuntansiIndex />} />
 
-                    {/* Daftar Akun (Index, Create, Edit) */}
+                    {/* Daftar Akun (Index, Create, Edit, Show) */}
                     <Route path="/akuntansi/daftar-akun" element={<DaftarAkunIndex />} />
                     <Route path="/akuntansi/daftar-akun/create" element={<DaftarAkunCreate />} />
+                    <Route path="/akuntansi/daftar-akun/:id" element={<DaftarAkunShow />} />
                     <Route path="/akuntansi/daftar-akun/:id/edit" element={<DaftarAkunEdit />} />
 
                     {/* Jurnal (Index, Create, Edit, Show) */}

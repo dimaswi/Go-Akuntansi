@@ -91,7 +91,7 @@ export default function AkuntansiIndex() {
     const [loading, setLoading] = useState(true);
     const [lastUpdated, setLastUpdated] = useState<string>('');
 
-    const { hasPermission } = useAuth();
+    const { hasPermission, user } = useAuth();
 
     // Permission per card dashboard
     const canAkuntansi = hasPermission('akuntansi.view');
@@ -2523,10 +2523,10 @@ export default function AkuntansiIndex() {
                                     Nama Pegawai & NIP
                                 </span>
                                 <div className="text-base font-bold font-mono text-neutral-900 dark:text-white mt-1 truncate">
-                                    {latestMySlip?.nama_pegawai || 'Akun Login'}
+                                    {latestMySlip?.nama_pegawai || user?.name || 'Pegawai'}
                                 </div>
                                 <div className="text-xs text-neutral-500 font-mono mt-0.5">
-                                    NIP: {latestMySlip?.nip || '-'}
+                                    NIP: {latestMySlip?.nip || user?.nip || '-'}
                                 </div>
                             </div>
 
@@ -2770,19 +2770,6 @@ export default function AkuntansiIndex() {
                         </div>
                     </div>
                 )}
-
-                {/* Footer status bar */}
-                <div className="p-3 border border-neutral-200 dark:border-neutral-800 bg-neutral-50/70 dark:bg-neutral-900/40 text-xs font-mono text-neutral-500 flex flex-col sm:flex-row items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                        <span className="size-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
-                        <span>Enterprise ERP Terintegrasi: Akuntansi, Kas & Bank, Persediaan, Aset Tetap, dan Penggajian Karyawan Aktif</span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <Link to="/akuntansi" className="hover:text-neutral-900 dark:hover:text-white hover:underline">
-                            Kembali ke Atas ↑
-                        </Link>
-                    </div>
-                </div>
 
             </div>
         </AppLayout>

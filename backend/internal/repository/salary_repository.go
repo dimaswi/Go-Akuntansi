@@ -516,6 +516,10 @@ func (r *salaryRepository) PostToJournal(batchIDs []uint, detailJurnals []PostJo
 }
 
 func (r *salaryRepository) GetPersonalSalarySlips(userID uint, userNIP, year, month string) ([]model.SalaryDetail, PersonalSalarySummary, error) {
+	if userID == 0 && userNIP == "" {
+		return []model.SalaryDetail{}, PersonalSalarySummary{}, nil
+	}
+
 	var slips []model.SalaryDetail
 	query := r.db.Model(&model.SalaryDetail{}).
 		Preload("SalaryBatch")

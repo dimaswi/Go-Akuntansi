@@ -78,27 +78,34 @@ export default function DaftarAkunCreate() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <div className="w-full max-w-full space-y-4">
                 {/* ─── Unified Card Container: KOTAK (rounded-none border border-neutral-200) ─── */}
-                <div className="w-full border border-neutral-200 dark:border-neutral-800 rounded-none bg-white dark:bg-neutral-950 shadow-none">
+                <div className="w-full border border-neutral-200 dark:border-neutral-800 rounded-none bg-white dark:bg-neutral-950 overflow-hidden shadow-none">
 
                     {/* ─── Card Header: Kembali + Icon + Title ──────── */}
-                    <div className="px-4 py-3 flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950">
+                    <div className="px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950">
                         <div className="flex items-center gap-3">
                             <Button
                                 type="button"
                                 variant="outline"
                                 size="sm"
                                 onClick={() => navigate('/akuntansi/daftar-akun')}
-                                className="h-8 rounded-none border border-neutral-200 bg-white dark:bg-neutral-900 text-xs font-medium gap-1 px-2.5 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 shadow-none"
-                                title="Kembali ke Daftar Akun"
+                                className="h-8 w-8 p-0 rounded-none border border-neutral-200 dark:border-neutral-800 shadow-none text-neutral-700 dark:text-neutral-300"
+                                title="Kembali"
                             >
-                                <ArrowLeft className="size-3.5" />
+                                <ArrowLeft className="size-4" />
                             </Button>
 
-                            <div className="flex items-center gap-2">
-                                <FolderTree className="h-5 w-5 text-neutral-800 dark:text-neutral-200" />
-                                <h2 className="text-base font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
-                                    Tambah Akun Baru
-                                </h2>
+                            <div className="flex items-center gap-2.5">
+                                <div className="size-8 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 flex items-center justify-center font-bold text-sm shrink-0">
+                                    <FolderTree className="size-4" />
+                                </div>
+                                <div>
+                                    <h1 className="text-sm font-bold uppercase tracking-tight text-neutral-900 dark:text-white">
+                                        Tambah Akun Baru
+                                    </h1>
+                                    <p className="text-[11px] text-neutral-500 font-mono">
+                                        Pembuatan akun buku besar baru dalam bagan akun
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>

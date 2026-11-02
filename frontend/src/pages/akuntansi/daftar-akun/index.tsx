@@ -12,6 +12,7 @@ import {
     ChevronsUp,
     Edit3,
     Eye,
+    BookOpen,
     FileSpreadsheet,
     Folder,
     FolderOpen,
@@ -348,51 +349,58 @@ export default function DaftarAkunIndex() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <div className="w-full max-w-full space-y-4">
-                {/* ─── Main Container Card ────────────────────────────────────────── */}
-                <div className="border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 rounded-none shadow-none">
-                    {/* Header Card */}
-                    <div className="px-4 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950">
+                {/* ─── Satu Kontainer Card Utuh (Single Unified Card Container) ──── */}
+                <div className="w-full border border-neutral-200 dark:border-neutral-800 rounded-none bg-white dark:bg-neutral-950 overflow-hidden shadow-none">
+                    {/* 1. Header Bar: Title on Left, Action Buttons on Right */}
+                    <div className="px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950">
                         <div className="flex items-center gap-2.5">
-                            <FolderTree className="h-5 w-5 text-neutral-800 dark:text-neutral-200 shrink-0" />
+                            <div className="size-8 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 flex items-center justify-center font-bold text-sm shrink-0">
+                                <FolderTree className="size-4" />
+                            </div>
                             <div>
-                                <h2 className="text-base font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
+                                <h1 className="text-sm font-bold uppercase tracking-tight text-neutral-900 dark:text-white">
                                     Daftar Akun (Chart of Accounts)
-                                </h2>
-                                <p className="text-xs text-neutral-500">
-                                    Daftar akun keuangan perusahaan
+                                </h1>
+                                <p className="text-[11px] text-neutral-500 font-mono flex items-center gap-1.5">
+                                    <span>Bagan Akun Standar Akuntansi Keuangan</span>
+                                    <span>•</span>
+                                    <span>{stats.total} Total Akun</span>
+                                    {loading && (
+                                        <RefreshCw className="size-3 animate-spin text-neutral-400 ml-1" />
+                                    )}
                                 </p>
                             </div>
                         </div>
 
                         {/* Top Action Buttons */}
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                             <Button
-                                size="sm"
+                                type="button"
                                 variant="outline"
+                                size="sm"
                                 onClick={fetchAccounts}
                                 disabled={loading}
-                                className="h-8 rounded-none border border-neutral-200 text-xs gap-1.5 px-3 bg-white dark:bg-neutral-900"
+                                className="h-8 rounded-none border border-neutral-200 dark:border-neutral-800 text-xs px-2.5 shadow-none"
                                 title="Segarkan Data"
                             >
                                 <RefreshCw className={cn('size-3.5', loading && 'animate-spin')} />
-                                <span className="hidden sm:inline">Segarkan</span>
                             </Button>
 
                             <Can permission="akuntansi.daftar-akun.create">
                                 <Button
                                     size="sm"
+                                    className="bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:bg-neutral-800 rounded-none h-8 px-3 text-xs font-semibold gap-1.5 shadow-none"
                                     onClick={() => navigate('/akuntansi/daftar-akun/create')}
-                                    className="h-8 rounded-none bg-black text-white hover:bg-neutral-800 text-xs font-semibold gap-1.5 px-3.5 shadow-none"
                                 >
                                     <Plus className="size-3.5" />
-                                    Tambah Akun
+                                    <span>Tambah Akun</span>
                                 </Button>
                             </Can>
                         </div>
                     </div>
 
                     {/* ─── Category Filter Tabs ───────────────────────────────────── */}
-                    <div className="flex items-center overflow-x-auto border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 px-2 py-1.5 gap-1">
+                    <div className="flex items-center overflow-x-auto border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/70 dark:bg-neutral-900/40 px-3 py-2 gap-1.5">
                         {[
                             { key: 'all', label: 'Semua Akun', count: stats.total },
                             { key: 'aset', label: '1 • Aset', count: stats.totalAset },
@@ -405,19 +413,19 @@ export default function DaftarAkunIndex() {
                                 key={tab.key}
                                 onClick={() => setSelectedCategory(tab.key)}
                                 className={cn(
-                                    'px-3 py-1 text-xs font-medium rounded-none whitespace-nowrap transition-colors flex items-center gap-1.5',
+                                    'px-3 py-1 text-xs font-semibold rounded-none whitespace-nowrap transition-colors flex items-center gap-1.5',
                                     selectedCategory === tab.key
-                                        ? 'bg-neutral-900 text-white dark:bg-white dark:text-black font-semibold'
-                                        : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-200/60 dark:text-neutral-400 dark:hover:text-white',
+                                        ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-none'
+                                        : 'bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800',
                                 )}
                             >
                                 <span>{tab.label}</span>
                                 <span
                                     className={cn(
-                                        'text-[11px] font-mono px-1 rounded-sm',
+                                        'text-[11px] font-mono px-1.5 py-0.2 rounded-none',
                                         selectedCategory === tab.key
                                             ? 'bg-neutral-800 text-neutral-200 dark:bg-neutral-200 dark:text-neutral-800'
-                                            : 'bg-neutral-200/70 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400',
+                                            : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400',
                                     )}
                                 >
                                     {tab.count}
@@ -735,6 +743,19 @@ export default function DaftarAkunIndex() {
                                                             </Can>
                                                         )}
 
+                                                        {/* Detail Akun (Show) */}
+                                                        <Button
+                                                            variant="outline"
+                                                            size="icon"
+                                                            className="size-7 rounded-none border border-neutral-300 text-neutral-700 bg-white hover:bg-neutral-100 hover:text-black p-0 shadow-none"
+                                                            title="Lihat Detail Akun"
+                                                            onClick={() =>
+                                                                navigate(`/akuntansi/daftar-akun/${row.id}`)
+                                                            }
+                                                        >
+                                                            <Eye className="size-3.5" />
+                                                        </Button>
+
                                                         {/* Mutasi Buku Besar (Khusus akun transaksi atau semua akun) */}
                                                         <Can permission="akuntansi.buku-besar.view">
                                                             <Button
@@ -746,7 +767,7 @@ export default function DaftarAkunIndex() {
                                                                     navigate(`/akuntansi/buku-besar/${row.id}`)
                                                                 }
                                                             >
-                                                                <Eye className="size-3.5" />
+                                                                <BookOpen className="size-3.5" />
                                                             </Button>
                                                         </Can>
 

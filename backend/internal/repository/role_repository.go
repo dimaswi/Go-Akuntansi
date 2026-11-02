@@ -28,9 +28,26 @@ func NewRoleRepository(db *gorm.DB) RoleRepository {
 	return &roleRepository{db: db}
 }
 
+func deduplicatePermissions(perms []model.Permission) []model.Permission {
+	seen := make(map[uint]bool)
+	unique := make([]model.Permission, 0, len(perms))
+	for _, p := range perms {
+		if !seen[p.ID] {
+			seen[p.ID] = true
+			unique = append(unique, p)
+		}
+	}
+	return unique
+}
+
 func (r *roleRepository) GetAll() ([]model.Role, error) {
 	var roles []model.Role
 	err := r.db.Preload("Permissions").Order("id asc").Find(&roles).Error
+	if err == nil {
+		for i := range roles {
+			roles[i].Permissions = deduplicatePermissions(roles[i].Permissions)
+		}
+	}
 	return roles, err
 }
 
@@ -40,6 +57,7 @@ func (r *roleRepository) GetByID(id uint) (*model.Role, error) {
 	if err != nil {
 		return nil, err
 	}
+	role.Permissions = deduplicatePermissions(role.Permissions)
 	return &role, nil
 }
 
@@ -49,6 +67,7 @@ func (r *roleRepository) GetByName(name string) (*model.Role, error) {
 	if err != nil {
 		return nil, err
 	}
+	role.Permissions = deduplicatePermissions(role.Permissions)
 	return &role, nil
 }
 
@@ -108,6 +127,9 @@ func (r *roleRepository) Delete(id uint) error {
 func (r *roleRepository) GetAllPermissions() ([]model.Permission, error) {
 	var perms []model.Permission
 	err := r.db.Order("module asc, id asc").Find(&perms).Error
+	if err == nil {
+		perms = deduplicatePermissions(perms)
+	}
 	return perms, err
 }
 

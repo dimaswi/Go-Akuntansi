@@ -66,8 +66,11 @@ export default function RoleShowPage() {
         );
     }
 
-    // Group permissions by module
-    const permsByModule = (role?.permissions || []).reduce<Record<string, NonNullable<RoleDetail['permissions']>>>((acc, p) => {
+    // Group permissions by module (deduplicated by id & name)
+    const uniquePermissions = (role?.permissions || []).filter(
+        (p, idx, self) => idx === self.findIndex((t) => (p.id && t.id === p.id) || t.name === p.name)
+    );
+    const permsByModule = uniquePermissions.reduce<Record<string, NonNullable<RoleDetail['permissions']>>>((acc, p) => {
         const mod = p.module || 'Umum';
         if (!acc[mod]) acc[mod] = [];
         acc[mod].push(p);
