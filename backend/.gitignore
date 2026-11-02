@@ -6,7 +6,6 @@
 *.dylib
 *.test
 *.out
-server
 server.exe
 test_build.exe
 
