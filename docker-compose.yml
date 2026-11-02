@@ -1,22 +1,85 @@
 services:
-  postgres:
+  # ==========================================
+  # Database Service (PostgreSQL 16)
+  # Container Name: akuntansi_db
+  # ==========================================
+  akuntansi_db:
     image: postgres:16-alpine
-    container_name: go_akuntansi_postgres
+    container_name: akuntansi_db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: akuntansi_db
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-akuntansi_db}
       TZ: Asia/Jakarta
     ports:
-      - "5432:5432"
+      # Port 5435 di host -> 5432 di container (menghindari port 5432, 5433, 5434, 5555)
+      - "${DB_PORT:-5435}:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - akuntansi_pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d akuntansi_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-akuntansi_db}"]
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - akuntansi_network
+
+  # ==========================================
+  # Backend API Service (Go REST API)
+  # Container Name: akuntansi_backend
+  # ==========================================
+  akuntansi_backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: akuntansi_backend
+    restart: unless-stopped
+    depends_on:
+      akuntansi_db:
+        condition: service_healthy
+    environment:
+      ENV: production
+      PORT: 8080
+      DB_HOST: akuntansi_db
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_NAME: ${DB_NAME:-akuntansi_db}
+      DB_SSLMODE: disable
+      DB_TIMEZONE: Asia/Jakarta
+      JWT_SECRET: ${JWT_SECRET:-super_secret_accounting_jwt_key_2026}
+      JWT_EXPIRATION_HOURS: 24
+    ports:
+      # Port 8897 di host -> 8080 di container (menghindari port 8898, 8899, 5005)
+      - "${BACKEND_PORT:-8897}:8080"
+    networks:
+      - akuntansi_network
+
+  # ==========================================
+  # Frontend Service (React Vite + Nginx)
+  # Container Name: akuntansi_frontend
+  # ==========================================
+  akuntansi_frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api/v1
+    container_name: akuntansi_frontend
+    restart: unless-stopped
+    depends_on:
+      - akuntansi_backend
+    ports:
+      # Port 3234 di host -> 80 di container (menghindari port 3232, 3233, 8040, 8041)
+      - "${FRONTEND_PORT:-3234}:80"
+    networks:
+      - akuntansi_network
+
+networks:
+  akuntansi_network:
+    driver: bridge
 
 volumes:
-  postgres_data:
+  akuntansi_pgdata:
+    driver: local

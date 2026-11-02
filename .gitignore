@@ -23,6 +23,7 @@ dist/
 .env.*
 !.env.example
 !.env.production.example
+!.env.docker.example
 backend/.env
 frontend/.env.local
 frontend/.env.*.local
