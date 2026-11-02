@@ -211,7 +211,13 @@ function InteractiveGrid() {
 
 export const LoginPage: React.FC = () => {
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const { login, token, isLoading } = useAuth();
+
+    useEffect(() => {
+        if (!isLoading && token) {
+            navigate('/akuntansi', { replace: true });
+        }
+    }, [token, isLoading, navigate]);
 
     const [nip, setNip] = useState('');
     const [password, setPassword] = useState('');
@@ -221,8 +227,12 @@ export const LoginPage: React.FC = () => {
     const appName = 'Sistem Akuntansi';
 
     const logoEl = (
-        <div className="flex aspect-square size-10 items-center justify-center rounded-lg bg-white/10 backdrop-blur border border-white/10">
-            <Building2 className="size-5 text-white" />
+        <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur border border-white/15 p-1.5 shadow-sm">
+            <img
+                src="/1.png"
+                alt="Logo Klinik Muhammadiyah Kedungadem"
+                className="size-full object-contain"
+            />
         </div>
     );
 
@@ -288,8 +298,8 @@ export const LoginPage: React.FC = () => {
                     </div>
 
                     {/* Bottom - Footer */}
-                    <p className="text-sm text-gray-600">
-                        &copy; {new Date().getFullYear()} {appName}
+                    <p className="text-sm text-gray-500">
+                        &copy; {new Date().getFullYear()} Klinik Muhammadiyah Kedungadem
                     </p>
                 </div>
             </div>
@@ -376,7 +386,7 @@ export const LoginPage: React.FC = () => {
 
                     {/* Mobile footer */}
                     <p className="lg:hidden text-center text-xs text-gray-500 mt-8">
-                        &copy; {new Date().getFullYear()} {appName}
+                        &copy; {new Date().getFullYear()} Klinik Muhammadiyah Kedungadem
                     </p>
                 </div>
             </div>

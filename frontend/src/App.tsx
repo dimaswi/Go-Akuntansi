@@ -171,6 +171,7 @@ import { SalaryInputGaji } from '@/pages/penggajian/input-gaji';
 import { SalaryPostToJournal } from '@/pages/penggajian/post-to-journal';
 import { MySalaryPage } from '@/pages/penggajian/my-salary';
 import { SalarySlipPage } from '@/pages/penggajian/slip';
+import ProtectedRoute from '@/components/protected-route';
 
 export const App: React.FC = () => {
     return (
@@ -181,9 +182,11 @@ export const App: React.FC = () => {
                     {/* Login Public */}
                     <Route path="/login" element={<LoginPage />} />
 
-                    {/* Dashboard Modul Akuntansi */}
-                    <Route path="/" element={<AkuntansiIndex />} />
-                    <Route path="/akuntansi" element={<AkuntansiIndex />} />
+                    {/* Protected ERP Routes */}
+                    <Route element={<ProtectedRoute />}>
+                        {/* Dashboard Modul Akuntansi */}
+                        <Route path="/" element={<AkuntansiIndex />} />
+                        <Route path="/akuntansi" element={<AkuntansiIndex />} />
 
                     {/* Daftar Akun (Index, Create, Edit) */}
                     <Route path="/akuntansi/daftar-akun" element={<DaftarAkunIndex />} />
@@ -382,9 +385,10 @@ export const App: React.FC = () => {
                     <Route path="/settings/users" element={<Navigate to="/users" replace />} />
                     <Route path="/settings/roles" element={<Navigate to="/roles" replace />} />
                     <Route path="/settings/permissions" element={<Navigate to="/permissions" replace />} />
+                </Route>
 
-                    {/* Fallback */}
-                    <Route path="*" element={<Navigate to="/" replace />} />
+                {/* Fallback */}
+                <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
             </BrowserRouter>
         </AuthProvider>
