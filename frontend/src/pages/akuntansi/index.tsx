@@ -2523,10 +2523,10 @@ export default function AkuntansiIndex() {
                                     Nama Pegawai & NIP
                                 </span>
                                 <div className="text-base font-bold font-mono text-neutral-900 dark:text-white mt-1 truncate">
-                                    {latestMySlip?.nama_pegawai || user?.name || 'Pegawai'}
+                                    {user?.name || latestMySlip?.nama_pegawai || 'Pegawai'}
                                 </div>
                                 <div className="text-xs text-neutral-500 font-mono mt-0.5">
-                                    NIP: {latestMySlip?.nip || user?.nip || '-'}
+                                    NIP: {user?.nip || latestMySlip?.nip || '-'}
                                 </div>
                             </div>
 

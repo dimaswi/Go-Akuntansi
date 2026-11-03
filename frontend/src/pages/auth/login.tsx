@@ -214,6 +214,10 @@ export const LoginPage: React.FC = () => {
     const { login, token, isLoading } = useAuth();
 
     useEffect(() => {
+        document.title = 'Log in - Akuntansi';
+    }, []);
+
+    useEffect(() => {
         if (!isLoading && token) {
             navigate('/akuntansi', { replace: true });
         }

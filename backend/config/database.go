@@ -386,6 +386,21 @@ func NormalizeDatabaseSchema(db *gorm.DB) {
 		_ = db.Exec(`DELETE FROM role_permissions a USING role_permissions b WHERE a.ctid > b.ctid AND a.role_id = b.role_id AND a.permission_id = b.permission_id`).Error
 		_ = db.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_role_permissions_role_perm ON role_permissions (role_id, permission_id)`).Error
 	}
+
+	// 8. Normalisasi kolom salary_details (n_ip <-> nip, p_ph21 <-> pph_21) & sinkronisasi user_id berdasarkan NIP
+	var hasSalaryDetailsNIP bool
+	db.Raw(`SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'salary_details' AND column_name = 'n_ip')`).Scan(&hasSalaryDetailsNIP)
+	if hasSalaryDetailsNIP {
+		_ = db.Exec(`UPDATE "salary_details" SET "nip" = "n_ip" WHERE ("nip" IS NULL OR "nip" = '') AND "n_ip" IS NOT NULL AND "n_ip" <> ''`).Error
+		_ = db.Exec(`UPDATE "salary_details" SET "n_ip" = "nip" WHERE ("n_ip" IS NULL OR "n_ip" = '') AND "nip" IS NOT NULL AND "nip" <> ''`).Error
+	}
+	var hasSalaryDetailsPPh21 bool
+	db.Raw(`SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'salary_details' AND column_name = 'p_ph21')`).Scan(&hasSalaryDetailsPPh21)
+	if hasSalaryDetailsPPh21 {
+		_ = db.Exec(`UPDATE "salary_details" SET "pph_21" = "p_ph21" WHERE ("pph_21" IS NULL OR "pph_21" = 0) AND "p_ph21" IS NOT NULL AND "p_ph21" <> 0`).Error
+		_ = db.Exec(`UPDATE "salary_details" SET "p_ph21" = "pph_21" WHERE ("p_ph21" IS NULL OR "p_ph21" = 0) AND "pph_21" IS NOT NULL AND "pph_21" <> 0`).Error
+	}
+	_ = db.Exec(`UPDATE "salary_details" sd SET "user_id" = u."id" FROM "users" u WHERE sd."nip" IS NOT NULL AND sd."nip" <> '' AND u."nip" = sd."nip" AND (sd."user_id" IS NULL OR sd."user_id" <> u."id")`).Error
 }
 
 // SeedDashboardPermissions mendaftarkan permission untuk setiap card pada dashboard utama.

@@ -97,6 +97,7 @@ func main() {
 
 		// API v1 Routes
 		api := r.Group("/api/v1")
+		api.Use(middleware.OptionalAuthMiddleware(db))
 		{
 			// Auth Public
 			authGroup := api.Group("/auth")

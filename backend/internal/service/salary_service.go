@@ -23,7 +23,7 @@ type SalaryService interface {
 	SaveSalaryDetails(batchID uint, details []model.SalaryDetail) error
 	GetJournalPreview(batchIDs []uint) ([]repository.JournalPreviewEntry, error)
 	PostToJournal(batchIDs []uint, detailJurnals []repository.PostJournalDetail, userID uint) (*model.Journal, error)
-	GetPersonalSalarySlips(userID uint, userNIP, year, month string) ([]model.SalaryDetail, repository.PersonalSalarySummary, error)
+	GetPersonalSalarySlips(userID uint, userNIP, userName, year, month string) ([]model.SalaryDetail, repository.PersonalSalarySummary, error)
 	GetSalaryDetailByID(id uint) (*model.SalaryDetail, error)
 	GenerateSalarySlipHTML(id uint, autoPrint bool) (string, error)
 	GenerateSalarySlipPDF(id uint) ([]byte, string, error)
@@ -74,8 +74,8 @@ func (s *salaryService) PostToJournal(batchIDs []uint, detailJurnals []repositor
 	return s.repo.PostToJournal(batchIDs, detailJurnals, userID)
 }
 
-func (s *salaryService) GetPersonalSalarySlips(userID uint, userNIP, year, month string) ([]model.SalaryDetail, repository.PersonalSalarySummary, error) {
-	return s.repo.GetPersonalSalarySlips(userID, userNIP, year, month)
+func (s *salaryService) GetPersonalSalarySlips(userID uint, userNIP, userName, year, month string) ([]model.SalaryDetail, repository.PersonalSalarySummary, error) {
+	return s.repo.GetPersonalSalarySlips(userID, userNIP, userName, year, month)
 }
 
 func (s *salaryService) GetSalaryDetailByID(id uint) (*model.SalaryDetail, error) {

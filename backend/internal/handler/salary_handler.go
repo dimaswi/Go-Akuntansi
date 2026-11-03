@@ -8,6 +8,7 @@ import (
 	"backend/internal/model"
 	"backend/internal/repository"
 	"backend/internal/service"
+	"backend/pkg/auth"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,41 +21,88 @@ func NewSalaryHandler(service service.SalaryService) *SalaryHandler {
 	return &SalaryHandler{service: service}
 }
 
+func extractClaimsFromHeader(c *gin.Context) *auth.JWTClaims {
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		return nil
+	}
+	parts := strings.SplitN(authHeader, " ", 2)
+	if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
+		return nil
+	}
+	claims, err := auth.ValidateToken(strings.TrimSpace(parts[1]))
+	if err != nil {
+		return nil
+	}
+	return claims
+}
+
 func getUserID(c *gin.Context) uint {
 	if uid, exists := c.Get("currentUserID"); exists {
-		if id, ok := uid.(uint); ok {
+		if id, ok := uid.(uint); ok && id > 0 {
 			return id
 		}
 	}
 	if uid, exists := c.Get("user_id"); exists {
-		if id, ok := uid.(uint); ok {
+		if id, ok := uid.(uint); ok && id > 0 {
 			return id
 		}
 	}
 	if uid, exists := c.Get("userID"); exists {
-		if id, ok := uid.(uint); ok {
+		if id, ok := uid.(uint); ok && id > 0 {
 			return id
 		}
 	}
 	if val, exists := c.Get("currentUser"); exists {
-		if u, ok := val.(model.User); ok {
+		if u, ok := val.(model.User); ok && u.ID > 0 {
 			return u.ID
 		}
-		if u, ok := val.(*model.User); ok {
+		if u, ok := val.(*model.User); ok && u != nil && u.ID > 0 {
 			return u.ID
 		}
+	}
+	if claims := extractClaimsFromHeader(c); claims != nil && claims.UserID > 0 {
+		return claims.UserID
 	}
 	return 0
 }
 
 func getUserNIP(c *gin.Context) string {
+	if nipVal, exists := c.Get("userNIP"); exists {
+		if nip, ok := nipVal.(string); ok && nip != "" {
+			return nip
+		}
+	}
 	if val, exists := c.Get("currentUser"); exists {
-		if u, ok := val.(model.User); ok {
+		if u, ok := val.(model.User); ok && u.NIP != "" {
 			return u.NIP
 		}
-		if u, ok := val.(*model.User); ok {
+		if u, ok := val.(*model.User); ok && u != nil && u.NIP != "" {
 			return u.NIP
 		}
+	}
+	if claims := extractClaimsFromHeader(c); claims != nil && claims.NIP != "" {
+		return claims.NIP
+	}
+	return ""
+}
+
+func getUserName(c *gin.Context) string {
+	if nameVal, exists := c.Get("userName"); exists {
+		if name, ok := nameVal.(string); ok && name != "" {
+			return name
+		}
+	}
+	if val, exists := c.Get("currentUser"); exists {
+		if u, ok := val.(model.User); ok && u.Name != "" {
+			return u.Name
+		}
+		if u, ok := val.(*model.User); ok && u != nil && u.Name != "" {
+			return u.Name
+		}
+	}
+	if claims := extractClaimsFromHeader(c); claims != nil && claims.Name != "" {
+		return claims.Name
 	}
 	return ""
 }
@@ -266,10 +314,11 @@ func (h *SalaryHandler) PostToJournal(c *gin.Context) {
 func (h *SalaryHandler) GetPersonalSalarySlips(c *gin.Context) {
 	userID := getUserID(c)
 	userNIP := getUserNIP(c)
+	userName := getUserName(c)
 	year := c.Query("period_year")
 	month := c.Query("period_month")
 
-	if userID == 0 && userNIP == "" {
+	if userID == 0 && userNIP == "" && userName == "" {
 		c.JSON(http.StatusOK, gin.H{
 			"success": true,
 			"data":    []interface{}{},
@@ -282,7 +331,7 @@ func (h *SalaryHandler) GetPersonalSalarySlips(c *gin.Context) {
 		return
 	}
 
-	slips, summary, err := h.service.GetPersonalSalarySlips(userID, userNIP, year, month)
+	slips, summary, err := h.service.GetPersonalSalarySlips(userID, userNIP, userName, year, month)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": err.Error()})
 		return

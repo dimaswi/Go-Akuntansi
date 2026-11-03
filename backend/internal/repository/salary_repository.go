@@ -23,7 +23,7 @@ type SalaryRepository interface {
 	SaveSalaryDetails(batchID uint, details []model.SalaryDetail) error
 	GetJournalPreview(batchIDs []uint) ([]JournalPreviewEntry, error)
 	PostToJournal(batchIDs []uint, detailJurnals []PostJournalDetail, userID uint) (*model.Journal, error)
-	GetPersonalSalarySlips(userID uint, userNIP, year, month string) ([]model.SalaryDetail, PersonalSalarySummary, error)
+	GetPersonalSalarySlips(userID uint, userNIP, userName, year, month string) ([]model.SalaryDetail, PersonalSalarySummary, error)
 	GetSalaryDetailByID(id uint) (*model.SalaryDetail, error)
 }
 
@@ -515,46 +515,98 @@ func (r *salaryRepository) PostToJournal(batchIDs []uint, detailJurnals []PostJo
 	return &createdJournal, nil
 }
 
-func (r *salaryRepository) GetPersonalSalarySlips(userID uint, userNIP, year, month string) ([]model.SalaryDetail, PersonalSalarySummary, error) {
-	if userID == 0 && userNIP == "" {
+func (r *salaryRepository) GetPersonalSalarySlips(userID uint, userNIP, userName, year, month string) ([]model.SalaryDetail, PersonalSalarySummary, error) {
+	if userID > 0 && (userNIP == "" || userName == "") {
+		var u model.User
+		if err := r.db.First(&u, userID).Error; err == nil {
+			if userNIP == "" {
+				userNIP = u.NIP
+			}
+			if userName == "" {
+				userName = u.Name
+			}
+		}
+	}
+
+	if userID == 0 && userNIP == "" && userName == "" {
 		return []model.SalaryDetail{}, PersonalSalarySummary{}, nil
 	}
 
-	var slips []model.SalaryDetail
-	query := r.db.Model(&model.SalaryDetail{}).
-		Preload("SalaryBatch")
+	buildBaseQuery := func() *gorm.DB {
+		q := r.db.Model(&model.SalaryDetail{}).
+			Preload("SalaryBatch").
+			Joins("JOIN salary_batches ON salary_batches.id = salary_details.salary_batch_id AND salary_batches.deleted_at IS NULL")
 
-	if userNIP != "" && userID > 0 {
-		query = query.Where("user_id = ? OR nip = ?", userID, userNIP)
-	} else if userID > 0 {
-		query = query.Where("user_id = ?", userID)
-	} else if userNIP != "" {
-		query = query.Where("nip = ?", userNIP)
-	}
-
-	if year != "" || month != "" {
-		query = query.Joins("JOIN salary_batches ON salary_batches.id = salary_details.salary_batch_id")
 		if year != "" {
-			if y, err := strconv.Atoi(year); err == nil {
-				query = query.Where("salary_batches.period_year = ?", y)
+			if y, err := strconv.Atoi(year); err == nil && y > 0 {
+				q = q.Where("salary_batches.period_year = ?", y)
 			}
 		}
 		if month != "" {
-			if m, err := strconv.Atoi(month); err == nil {
-				query = query.Where("salary_batches.period_month = ?", m)
+			if m, err := strconv.Atoi(month); err == nil && m > 0 {
+				q = q.Where("salary_batches.period_month = ?", m)
 			}
+		}
+		return q.Order("salary_batches.period_year DESC, salary_batches.period_month DESC, salary_details.id DESC")
+	}
+
+	var slips []model.SalaryDetail
+	var conds []string
+	var args []interface{}
+
+	if userID > 0 {
+		conds = append(conds, "salary_details.user_id = ?")
+		args = append(args, userID)
+	}
+
+	if userNIP != "" {
+		conds = append(conds, "salary_details.nip = ?")
+		args = append(args, userNIP)
+
+		cleanNIP := strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(userNIP, ".", ""), "-", ""), " ", "")
+		if cleanNIP != "" && cleanNIP != userNIP {
+			conds = append(conds, "REPLACE(REPLACE(REPLACE(salary_details.nip, '.', ''), '-', ''), ' ', '') = ?")
+			args = append(args, cleanNIP)
 		}
 	}
 
-	err := query.Order("id DESC").Find(&slips).Error
-	if err != nil {
-		return nil, PersonalSalarySummary{}, err
+	if len(conds) > 0 {
+		err := buildBaseQuery().Where(strings.Join(conds, " OR "), args...).Find(&slips).Error
+		if err != nil {
+			return nil, PersonalSalarySummary{}, err
+		}
+	}
+
+	// Fallback berdasarkan nama pegawai apabila user_id & nip belum menghasilkan data
+	if len(slips) == 0 && userName != "" {
+		var nameConds []string
+		var nameArgs []interface{}
+
+		nameConds = append(nameConds, "LOWER(TRIM(salary_details.nama_pegawai)) = LOWER(TRIM(?))")
+		nameArgs = append(nameArgs, userName)
+
+		nameClean := strings.TrimSpace(userName)
+		if idx := strings.Index(nameClean, ","); idx != -1 {
+			baseName := strings.TrimSpace(nameClean[:idx])
+			if len(baseName) >= 4 {
+				nameConds = append(nameConds, "salary_details.nama_pegawai ILIKE ?")
+				nameArgs = append(nameArgs, baseName+"%")
+			}
+		}
+
+		err := buildBaseQuery().Where(strings.Join(nameConds, " OR "), nameArgs...).Find(&slips).Error
+		if err != nil {
+			return nil, PersonalSalarySummary{}, err
+		}
 	}
 
 	var summary PersonalSalarySummary
 	summary.TotalSlips = int64(len(slips))
-	for _, s := range slips {
-		summary.TotalGajiBersih = summary.TotalGajiBersih.Add(s.GajiBersih)
+	for i := range slips {
+		if slips[i].NIP == "" && userNIP != "" {
+			slips[i].NIP = userNIP
+		}
+		summary.TotalGajiBersih = summary.TotalGajiBersih.Add(slips[i].GajiBersih)
 	}
 	if len(slips) > 0 && slips[0].SalaryBatch != nil {
 		summary.LatestPeriod = slips[0].SalaryBatch.PeriodDisplay
