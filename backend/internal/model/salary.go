@@ -90,6 +90,7 @@ type SalaryDetail struct {
 	ArisanKeluarga              decimal.Decimal `gorm:"column:arisan_keluarga;type:numeric(15,2);default:0" json:"arisan_keluarga"`
 	DendaNgaji                  decimal.Decimal `gorm:"column:denda_ngaji;type:numeric(15,2);default:0" json:"denda_ngaji"`
 	Kasbon                      decimal.Decimal `gorm:"column:kasbon;type:numeric(15,2);default:0" json:"kasbon"`
+	DanaSosial                  decimal.Decimal `gorm:"column:dana_sosial;type:numeric(15,2);default:0" json:"dana_sosial"`
 	TotalPotongan               decimal.Decimal `gorm:"column:total_potongan;type:numeric(15,2);default:0" json:"total_potongan"`
 	GajiBersih                  decimal.Decimal `gorm:"column:gaji_bersih;type:numeric(15,2);default:0" json:"gaji_bersih"`
 	CreatedAt                   time.Time       `gorm:"column:created_at" json:"created_at"`
@@ -120,7 +121,8 @@ func (d *SalaryDetail) CalculateTotals() {
 		Add(d.DendaAbsen).
 		Add(d.ArisanKeluarga).
 		Add(d.DendaNgaji).
-		Add(d.Kasbon)
+		Add(d.Kasbon).
+		Add(d.DanaSosial)
 
 	d.GajiBersih = d.TotalPendapatan.Sub(d.TotalPotongan)
 }

@@ -1,9 +1,9 @@
 import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useAuth } from '@/context/auth-context';
+import { useAuth, isTokenValid } from '@/context/auth-context';
 
 export const ProtectedRoute: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
-    const { token, isLoading } = useAuth();
+    const { token, user, isLoading } = useAuth();
     const location = useLocation();
 
     if (isLoading) {
@@ -17,7 +17,7 @@ export const ProtectedRoute: React.FC<{ children?: React.ReactNode }> = ({ child
         );
     }
 
-    if (!token) {
+    if (!token || !user || !isTokenValid(token)) {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
@@ -25,4 +25,3 @@ export const ProtectedRoute: React.FC<{ children?: React.ReactNode }> = ({ child
 };
 
 export default ProtectedRoute;
-

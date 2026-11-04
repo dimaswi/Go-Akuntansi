@@ -9,6 +9,7 @@ import (
 
 	"backend/internal/model"
 
+	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -17,6 +18,7 @@ import (
 var DB *gorm.DB
 
 func InitDB() *gorm.DB {
+	_ = godotenv.Load(".env", "backend/.env", "../.env")
 	host := os.Getenv("DB_HOST")
 	if host == "" {
 		host = "localhost"
@@ -31,7 +33,7 @@ func InitDB() *gorm.DB {
 	}
 	password := os.Getenv("DB_PASSWORD")
 	if password == "" {
-		password = "postgres"
+		password = "Dimasw1950"
 	}
 	dbname := os.Getenv("DB_NAME")
 	if dbname == "" {
@@ -110,6 +112,11 @@ func InitDB() *gorm.DB {
 		// Modul Penggajian (Payroll)
 		&model.SalaryBatch{},
 		&model.SalaryDetail{},
+
+		// Pengguna & Hak Akses
+		&model.Role{},
+		&model.Permission{},
+		&model.User{},
 	)
 	if err != nil {
 		log.Printf("AutoMigrate error: %v", err)
@@ -401,6 +408,24 @@ func NormalizeDatabaseSchema(db *gorm.DB) {
 		_ = db.Exec(`UPDATE "salary_details" SET "p_ph21" = "pph_21" WHERE ("p_ph21" IS NULL OR "p_ph21" = 0) AND "pph_21" IS NOT NULL AND "pph_21" <> 0`).Error
 	}
 	_ = db.Exec(`UPDATE "salary_details" sd SET "user_id" = u."id" FROM "users" u WHERE sd."nip" IS NOT NULL AND sd."nip" <> '' AND u."nip" = sd."nip" AND (sd."user_id" IS NULL OR sd."user_id" <> u."id")`).Error
+	_ = db.Exec(`ALTER TABLE "salary_details" ADD COLUMN IF NOT EXISTS "dana_sosial" numeric(15,2) DEFAULT 0`).Error
+
+	// 9. Pastikan tabel users memiliki primary key id
+	var hasUsersTable bool
+	db.Raw(`SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'users')`).Scan(&hasUsersTable)
+	if hasUsersTable {
+		var hasPK bool
+		db.Raw(`
+			SELECT EXISTS (
+				SELECT 1 FROM information_schema.table_constraints tc
+				JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name AND tc.table_schema = kcu.table_schema
+				WHERE tc.table_schema = 'public' AND tc.table_name = 'users' AND tc.constraint_type = 'PRIMARY KEY' AND kcu.column_name = 'id'
+			)
+		`).Scan(&hasPK)
+		if !hasPK {
+			_ = db.Exec(`ALTER TABLE "users" ADD PRIMARY KEY (id)`).Error
+		}
+	}
 }
 
 // SeedDashboardPermissions mendaftarkan permission untuk setiap card pada dashboard utama.

@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	_ = godotenv.Load()
+	_ = godotenv.Load(".env", "backend/.env", "../.env")
 
 	// Connect Database
 	db := config.InitDB()
@@ -377,6 +377,14 @@ func main() {
 			// Dashboard Ringkasan Stats (Ultra-fast single query)
 			api.GET("/dashboard/stats", reportHandler.GetDashboardStats)
 		}
+	} else {
+		log.Printf("CRITICAL WARNING: Database tidak terkoneksi! Periksa koneksi PostgreSQL.")
+		r.NoRoute(func(c *gin.Context) {
+			c.JSON(503, gin.H{
+				"status":  "error",
+				"message": "Database terputus (PostgreSQL belum berjalan atau kredensial salah). Silakan periksa koneksi database.",
+			})
+		})
 	}
 
 	port := os.Getenv("PORT")

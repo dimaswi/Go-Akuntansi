@@ -162,9 +162,9 @@ func (s *salaryService) GenerateSalaryTemplateXLSX(batchID uint, customRows []mo
     <col min="3" max="3" width="18" customWidth="1"/>
     <col min="4" max="14" width="16" customWidth="1"/>
     <col min="15" max="15" width="20" customWidth="1"/>
-    <col min="16" max="23" width="16" customWidth="1"/>
-    <col min="24" max="24" width="20" customWidth="1"/>
-    <col min="25" max="25" width="22" customWidth="1"/>
+    <col min="16" max="24" width="16" customWidth="1"/>
+    <col min="25" max="25" width="20" customWidth="1"/>
+    <col min="26" max="26" width="22" customWidth="1"/>
   </cols>
   <sheetData>
 `)
@@ -194,8 +194,9 @@ func (s *salaryService) GenerateSalaryTemplateXLSX(batchID uint, customRows []mo
       <c r="U1" t="inlineStr" s="3"><is><t>ARISAN KEL</t></is></c>
       <c r="V1" t="inlineStr" s="3"><is><t>DENDA NGAJI</t></is></c>
       <c r="W1" t="inlineStr" s="3"><is><t>KASBON</t></is></c>
-      <c r="X1" t="inlineStr" s="3"><is><t>TOTAL POTONGAN</t></is></c>
-      <c r="Y1" t="inlineStr" s="1"><is><t>GAJI BERSIH (NETTO)</t></is></c>
+      <c r="X1" t="inlineStr" s="3"><is><t>DANA SOSIAL</t></is></c>
+      <c r="Y1" t="inlineStr" s="3"><is><t>TOTAL POTONGAN</t></is></c>
+      <c r="Z1" t="inlineStr" s="1"><is><t>GAJI BERSIH (NETTO)</t></is></c>
     </row>
 `)
 
@@ -230,8 +231,9 @@ func (s *salaryService) GenerateSalaryTemplateXLSX(batchID uint, customRows []mo
       <c r="U%d" s="4"><v>%d</v></c>
       <c r="V%d" s="4"><v>%d</v></c>
       <c r="W%d" s="4"><v>%d</v></c>
-      <c r="X%d" s="7"><f>SUM(P%d:W%d)</f><v>%d</v></c>
-      <c r="Y%d" s="8"><f>O%d-X%d</f><v>%d</v></c>
+      <c r="X%d" s="4"><v>%d</v></c>
+      <c r="Y%d" s="7"><f>SUM(P%d:X%d)</f><v>%d</v></c>
+      <c r="Z%d" s="8"><f>O%d-Y%d</f><v>%d</v></c>
     </row>
 `,
 			rNum,
@@ -258,6 +260,7 @@ func (s *salaryService) GenerateSalaryTemplateXLSX(batchID uint, customRows []mo
 			rNum, decVal(row.ArisanKeluarga),
 			rNum, decVal(row.DendaNgaji),
 			rNum, decVal(row.Kasbon),
+			rNum, decVal(row.DanaSosial),
 			rNum, rNum, rNum, decVal(row.TotalPotongan),
 			rNum, rNum, rNum, decVal(row.GajiBersih),
 		))

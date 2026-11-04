@@ -14,6 +14,7 @@ type UserRepository interface {
 	GetAll(search string, roleID *uint, page, limit int) ([]model.User, int64, error)
 	Create(user *model.User) error
 	Update(user *model.User) error
+	UpdatePassword(userID uint, hashedPassword string) error
 	Delete(id uint) error
 	GetDepartments() ([]model.Department, error)
 	GetDepartmentByID(id uint) (*model.Department, error)
@@ -78,7 +79,11 @@ func (r *userRepository) Create(user *model.User) error {
 }
 
 func (r *userRepository) Update(user *model.User) error {
-	return r.db.Omit("Role", "Department").Save(user).Error
+	return r.db.Model(&model.User{}).Where("id = ?", user.ID).Omit("Role", "Department").Save(user).Error
+}
+
+func (r *userRepository) UpdatePassword(userID uint, hashedPassword string) error {
+	return r.db.Model(&model.User{}).Where("id = ?", userID).Update("password", hashedPassword).Error
 }
 
 func (r *userRepository) Delete(id uint) error {

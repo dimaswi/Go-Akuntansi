@@ -292,6 +292,7 @@ func (s *salaryService) GenerateSalarySlipPDF(id uint) ([]byte, string, error) {
 	addDed("Arisan Keluarga", detail.ArisanKeluarga)
 	addDed("Denda Ngaji", detail.DendaNgaji)
 	addDed("Kasbon", detail.Kasbon)
+	addDed("Dana Sosial", detail.DanaSosial)
 
 	// Columns setup
 	colW := (contentW - 16.0) / 2.0

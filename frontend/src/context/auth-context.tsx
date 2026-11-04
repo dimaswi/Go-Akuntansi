@@ -38,6 +38,16 @@ export function parseJwt(token: string): any {
     }
 }
 
+export function isTokenValid(token: string | null): boolean {
+    if (!token) return false;
+    const claims = parseJwt(token);
+    if (!claims) return false;
+    if (claims.exp && claims.exp * 1000 < Date.now()) {
+        return false;
+    }
+    return true;
+}
+
 interface AuthContextType {
     user: UserProfile | null;
     token: string | null;
@@ -50,8 +60,26 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const [token, setToken] = useState<string | null>(() => {
+        try {
+            const savedToken = localStorage.getItem('token');
+            if (savedToken && isTokenValid(savedToken)) {
+                return savedToken;
+            }
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+        } catch {
+            // ignore
+        }
+        return null;
+    });
+
     const [user, setUser] = useState<UserProfile | null>(() => {
         try {
+            const savedToken = localStorage.getItem('token');
+            if (!savedToken || !isTokenValid(savedToken)) {
+                return null;
+            }
             const saved = localStorage.getItem('user');
             if (saved) {
                 const parsed = JSON.parse(saved);
@@ -59,50 +87,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     return parsed;
                 }
             }
-            const savedToken = localStorage.getItem('token');
-            if (savedToken) {
-                const claims = parseJwt(savedToken);
-                if (claims && (claims.name || claims.nip)) {
-                    return {
-                        id: claims.user_id || 1,
-                        nip: claims.nip || '',
-                        name: claims.name || '',
-                        role: {
-                            id: 1,
-                            name: claims.role || 'admin',
-                            display_name: claims.role === 'admin' ? 'Administrator' : claims.role,
-                        },
-                    };
-                }
-            }
         } catch {
             // ignore
         }
         return null;
     });
-    const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
+
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
     useEffect(() => {
         const fetchMe = async () => {
             const savedToken = localStorage.getItem('token');
-            if (savedToken) {
-                try {
-                    const res = await api.get('/auth/me');
-                    if (res.data?.data) {
-                        setUser(res.data.data);
-                        localStorage.setItem('user', JSON.stringify(res.data.data));
-                    }
-                } catch (err: any) {
-                    if (err.response?.status === 401) {
-                        localStorage.removeItem('token');
-                        localStorage.removeItem('user');
-                        setUser(null);
-                        setToken(null);
-                    }
-                }
+            if (!savedToken || !isTokenValid(savedToken)) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                setToken(null);
+                setUser(null);
+                setIsLoading(false);
+                return;
             }
-            setIsLoading(false);
+
+            try {
+                const res = await api.get('/auth/me');
+                if (res.data?.data) {
+                    setUser(res.data.data);
+                    localStorage.setItem('user', JSON.stringify(res.data.data));
+                } else {
+                    throw new Error('User data empty');
+                }
+            } catch (err: any) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                setUser(null);
+                setToken(null);
+            } finally {
+                setIsLoading(false);
+            }
         };
 
         fetchMe();

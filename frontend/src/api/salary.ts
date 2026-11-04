@@ -55,6 +55,7 @@ export interface SalaryDetail {
     arisan_keluarga: number;
     denda_ngaji: number;
     kasbon: number;
+    dana_sosial?: number;
     total_potongan?: number;
     // Bersih
     gaji_bersih?: number;

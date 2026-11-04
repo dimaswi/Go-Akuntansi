@@ -211,17 +211,17 @@ function InteractiveGrid() {
 
 export const LoginPage: React.FC = () => {
     const navigate = useNavigate();
-    const { login, token, isLoading } = useAuth();
+    const { login, token, user, isLoading } = useAuth();
 
     useEffect(() => {
         document.title = 'Log in - Akuntansi';
     }, []);
 
     useEffect(() => {
-        if (!isLoading && token) {
+        if (!isLoading && token && user) {
             navigate('/akuntansi', { replace: true });
         }
-    }, [token, isLoading, navigate]);
+    }, [token, user, isLoading, navigate]);
 
     const [nip, setNip] = useState('');
     const [password, setPassword] = useState('');

@@ -31,7 +31,14 @@ func (s *authService) Login(nip, password string) (string, *model.User, error) {
 	}
 
 	// Verifikasi kata sandi dengan hash bcrypt
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+	matchErr := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if matchErr != nil && user.Password == password {
+		if newHash, hashErr := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost); hashErr == nil {
+			_ = s.userRepo.UpdatePassword(user.ID, string(newHash))
+		}
+		matchErr = nil
+	}
+	if matchErr != nil {
 		return "", nil, errors.New("NIP atau kata sandi tidak sesuai")
 	}
 
@@ -72,7 +79,7 @@ func (s *authService) ChangePassword(userID uint, oldPassword, newPassword strin
 	}
 
 	user.Password = string(newHash)
-	return s.userRepo.Update(user)
+	return s.userRepo.UpdatePassword(userID, string(newHash))
 }
 
 type RoleService interface {

@@ -50,7 +50,28 @@ func (h *AuthHandler) GetProfile(c *gin.Context) {
 		return
 	}
 
-	user := val.(model.User)
+	var userID uint
+	if u, ok := val.(model.User); ok && u.ID > 0 {
+		userID = u.ID
+	} else if uPtr, ok := val.(*model.User); ok && uPtr != nil && uPtr.ID > 0 {
+		userID = uPtr.ID
+	}
+	if userID == 0 {
+		if uid, ok := c.Get("currentUserID"); ok {
+			if id, ok := uid.(uint); ok {
+				userID = id
+			}
+		}
+	}
+	if userID == 0 {
+		response.Unauthorized(c, "Identitas pengguna tidak valid")
+		return
+	}
+	user, err := h.svc.GetProfile(userID)
+	if err != nil {
+		response.NotFound(c, "Profil pengguna tidak ditemukan")
+		return
+	}
 	response.Success(c, http.StatusOK, "Profil pengguna berhasil diambil", user)
 }
 
@@ -70,7 +91,23 @@ func (h *AuthHandler) ChangePassword(c *gin.Context) {
 		return
 	}
 
-	user := val.(model.User)
+	var userID uint
+	if u, ok := val.(model.User); ok && u.ID > 0 {
+		userID = u.ID
+	} else if uPtr, ok := val.(*model.User); ok && uPtr != nil && uPtr.ID > 0 {
+		userID = uPtr.ID
+	}
+	if userID == 0 {
+		if uid, ok := c.Get("currentUserID"); ok {
+			if id, ok := uid.(uint); ok {
+				userID = id
+			}
+		}
+	}
+	if userID == 0 {
+		response.Unauthorized(c, "Identitas pengguna tidak valid")
+		return
+	}
 
 	var req ChangePasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -78,7 +115,7 @@ func (h *AuthHandler) ChangePassword(c *gin.Context) {
 		return
 	}
 
-	if err := h.svc.ChangePassword(user.ID, req.OldPassword, req.NewPassword); err != nil {
+	if err := h.svc.ChangePassword(userID, req.OldPassword, req.NewPassword); err != nil {
 		response.BadRequest(c, err.Error(), nil)
 		return
 	}

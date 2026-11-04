@@ -126,6 +126,7 @@ export const SalarySlipPage: React.FC = () => {
         { label: 'Arisan Keluarga', val: slip.arisan_keluarga },
         { label: 'Denda Ngaji', val: slip.denda_ngaji },
         { label: 'Kasbon', val: slip.kasbon },
+        { label: 'Dana Sosial', val: slip.dana_sosial },
     ].filter((item) => Number(item.val || 0) > 0);
 
     const cleanTerbilang =

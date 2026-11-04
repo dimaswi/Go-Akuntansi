@@ -223,6 +223,7 @@ func (s *salaryService) GenerateSalarySlipHTML(id uint, autoPrint bool) (string,
 		{"Arisan Keluarga", detail.ArisanKeluarga},
 		{"Denda Ngaji", detail.DendaNgaji},
 		{"Kasbon", detail.Kasbon},
+		{"Dana Sosial", detail.DanaSosial},
 	}
 
 	var incomeRowsBuilder strings.Builder

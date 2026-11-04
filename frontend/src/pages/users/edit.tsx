@@ -166,6 +166,7 @@ export default function UserEditPage() {
                                         </label>
                                         <Input
                                             type="password"
+                                            autoComplete="new-password"
                                             placeholder="Kosongkan jika tidak diubah"
                                             className="h-9 rounded-none border border-neutral-200 text-sm bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 shadow-none focus-visible:ring-1 focus-visible:ring-neutral-400"
                                             value={password}

@@ -41,6 +41,7 @@ const EDITABLE_FIELDS: (keyof SalaryDetail)[] = [
     'arisan_keluarga',
     'denda_ngaji',
     'kasbon',
+    'dana_sosial',
 ];
 
 const formatCurrency = (val: number | undefined) => {
@@ -106,7 +107,8 @@ const calculateRowTotals = (row: SalaryDetail): SalaryDetail => {
         num(row.denda_absen) +
         num(row.arisan_keluarga) +
         num(row.denda_ngaji) +
-        num(row.kasbon);
+        num(row.kasbon) +
+        num(row.dana_sosial);
 
     const gajiBersih = totalPendapatan - totalPotongan;
 
@@ -545,6 +547,7 @@ export const SalaryInputGaji: React.FC = () => {
             arisan_keluarga: 0,
             denda_ngaji: 0,
             kasbon: 0,
+            dana_sosial: 0,
         });
 
         setRows((prev) => [...prev, newRow]);
@@ -613,6 +616,7 @@ export const SalaryInputGaji: React.FC = () => {
                     arisan_keluarga: 0,
                     denda_ngaji: 0,
                     kasbon: 0,
+            dana_sosial: 0,
                 })
             );
 
@@ -913,7 +917,7 @@ export const SalaryInputGaji: React.FC = () => {
                                         Total Bruto
                                     </th>
 
-                                    {/* 8 Komponen Potongan */}
+                                    {/* 9 Komponen Potongan */}
                                     <th className="py-2.5 px-3 text-center min-w-[130px] w-32 bg-rose-50/70 dark:bg-rose-950/30 border-r border-neutral-200 dark:border-neutral-800">PPh 21</th>
                                     <th className="py-2.5 px-3 text-center min-w-[130px] w-32 bg-rose-50/70 dark:bg-rose-950/30 border-r border-neutral-200 dark:border-neutral-800">Infaq</th>
                                     <th className="py-2.5 px-3 text-center min-w-[130px] w-32 bg-rose-50/70 dark:bg-rose-950/30 border-r border-neutral-200 dark:border-neutral-800">BPJS Kes</th>
@@ -921,7 +925,8 @@ export const SalaryInputGaji: React.FC = () => {
                                     <th className="py-2.5 px-3 text-center min-w-[130px] w-32 bg-rose-50/70 dark:bg-rose-950/30 border-r border-neutral-200 dark:border-neutral-800">Denda Absen</th>
                                     <th className="py-2.5 px-3 text-center min-w-[130px] w-32 bg-rose-50/70 dark:bg-rose-950/30 border-r border-neutral-200 dark:border-neutral-800">Arisan Kel</th>
                                     <th className="py-2.5 px-3 text-center min-w-[130px] w-32 bg-rose-50/70 dark:bg-rose-950/30 border-r border-neutral-200 dark:border-neutral-800">Denda Ngaji</th>
-                                    <th className="py-2.5 px-3 text-center min-w-[130px] w-32 bg-rose-50/70 dark:bg-rose-950/30 border-r border-neutral-300 dark:border-neutral-700">Kasbon</th>
+                                    <th className="py-2.5 px-3 text-center min-w-[130px] w-32 bg-rose-50/70 dark:bg-rose-950/30 border-r border-neutral-200 dark:border-neutral-800">Kasbon</th>
+                                    <th className="py-2.5 px-3 text-center min-w-[130px] w-32 bg-rose-50/70 dark:bg-rose-950/30 border-r border-neutral-300 dark:border-neutral-700">Dana Sosial</th>
                                     <th className="py-2.5 px-3 text-right min-w-[150px] w-40 bg-rose-100 dark:bg-rose-950/50 font-bold border-r border-neutral-300 dark:border-neutral-700 text-rose-900 dark:text-rose-300">
                                         Total Potongan
                                     </th>
@@ -951,7 +956,7 @@ export const SalaryInputGaji: React.FC = () => {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={25} className="py-16 text-center text-neutral-400 italic">
+                                        <td colSpan={26} className="py-16 text-center text-neutral-400 italic">
                                             Belum ada baris karyawan.{' '}
                                             <button
                                                 type="button"

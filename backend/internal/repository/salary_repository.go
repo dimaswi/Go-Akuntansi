@@ -269,7 +269,7 @@ func (r *salaryRepository) GetJournalPreview(batchIDs []uint) ([]JournalPreviewE
 
 	var sumGajiPokok, sumSIA, sumTransport, sumJabatan, sumJagaUtama, sumJagaPratama decimal.Decimal
 	var sumJaspelPratama, sumJaspelRanap, sumJaspelRalan, sumJaspelRalanBPJS, sumTugasTambahan decimal.Decimal
-	var sumPph21, sumInfaq, sumBPJSKes, sumBPJSTk, sumDendaAbsen, sumArisan, sumDendaNgaji, sumKasbon decimal.Decimal
+	var sumPph21, sumInfaq, sumBPJSKes, sumBPJSTk, sumDendaAbsen, sumArisan, sumDendaNgaji, sumKasbon, sumDanaSosial decimal.Decimal
 	var sumGajiBersih decimal.Decimal
 
 	for _, d := range details {
@@ -293,6 +293,7 @@ func (r *salaryRepository) GetJournalPreview(batchIDs []uint) ([]JournalPreviewE
 		sumArisan = sumArisan.Add(d.ArisanKeluarga)
 		sumDendaNgaji = sumDendaNgaji.Add(d.DendaNgaji)
 		sumKasbon = sumKasbon.Add(d.Kasbon)
+		sumDanaSosial = sumDanaSosial.Add(d.DanaSosial)
 
 		sumGajiBersih = sumGajiBersih.Add(d.GajiBersih)
 	}
@@ -385,6 +386,14 @@ func (r *salaryRepository) GetJournalPreview(batchIDs []uint) ([]JournalPreviewE
 			AccountName: "Kas - Arisan Keluarga",
 			Type:        "credit",
 			Amount:      sumArisan,
+		})
+	}
+
+	if sumDanaSosial.GreaterThan(decimal.Zero) {
+		entries = append(entries, JournalPreviewEntry{
+			AccountName: "Hutang Dana Sosial",
+			Type:        "credit",
+			Amount:      sumDanaSosial,
 		})
 	}
 
