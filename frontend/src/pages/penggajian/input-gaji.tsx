@@ -135,12 +135,12 @@ const SalaryRow = React.memo<SalaryRowProps>(
     ({ row, index, totalRows, isReadOnly, onCellChange, onPaste, onKeyDown, onDeleteRow }) => {
         return (
             <tr className="hover:bg-neutral-50/80 dark:hover:bg-neutral-900/60 transition-colors">
-                {/* Column No - Sticky */}
+                {/* Column No - Sticky Left */}
                 <td className="sticky left-0 bg-white dark:bg-neutral-950 z-20 py-1.5 px-2 text-center text-neutral-400 border-r border-neutral-300 dark:border-neutral-700 w-12 min-w-[48px] max-w-[48px]">
                     {index + 1}
                 </td>
 
-                {/* Nama Pegawai & NIP - Sticky */}
+                {/* Nama Pegawai & NIP - Sticky Left */}
                 <td className="sticky left-[48px] bg-white dark:bg-neutral-950 z-20 py-1.5 px-3 border-r border-neutral-300 dark:border-neutral-700 min-w-[280px] w-[280px]">
                     {isReadOnly || (row.user_id && row.user_id > 0) ? (
                         <div>
@@ -202,12 +202,7 @@ const SalaryRow = React.memo<SalaryRowProps>(
                     </td>
                 ))}
 
-                {/* Total Bruto */}
-                <td className="py-1.5 px-3 text-right font-bold min-w-[150px] w-40 text-blue-700 dark:text-blue-400 bg-blue-50/60 dark:bg-blue-950/30 border-r border-neutral-300 dark:border-neutral-700">
-                    {formatCurrency(row.total_pendapatan)}
-                </td>
-
-                {/* 8 Komponen Potongan - Borderless Excel-grid inputs */}
+                {/* 9 Komponen Potongan - Borderless Excel-grid inputs */}
                 {EDITABLE_FIELDS.slice(11).map((field, colIdx) => (
                     <td
                         key={field}
@@ -237,19 +232,39 @@ const SalaryRow = React.memo<SalaryRowProps>(
                     </td>
                 ))}
 
-                {/* Total Potongan */}
-                <td className="py-1.5 px-3 text-right font-bold min-w-[150px] w-40 text-rose-700 dark:text-rose-400 bg-rose-50/60 dark:bg-rose-950/30 border-r border-neutral-300 dark:border-neutral-700">
+                {/* Total Bruto - Sticky Right */}
+                <td
+                    className={cn(
+                        'sticky z-20 py-1.5 px-3 text-right font-bold min-w-[140px] w-[140px] max-w-[140px] text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950 border-l border-r border-neutral-300 dark:border-neutral-700',
+                        isReadOnly ? 'right-[290px]' : 'right-[338px]'
+                    )}
+                >
+                    {formatCurrency(row.total_pendapatan)}
+                </td>
+
+                {/* Total Potongan - Sticky Right */}
+                <td
+                    className={cn(
+                        'sticky z-20 py-1.5 px-3 text-right font-bold min-w-[140px] w-[140px] max-w-[140px] text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950 border-r border-neutral-300 dark:border-neutral-700',
+                        isReadOnly ? 'right-[150px]' : 'right-[198px]'
+                    )}
+                >
                     {formatCurrency(row.total_potongan)}
                 </td>
 
-                {/* Gaji Bersih (Netto) */}
-                <td className="py-1.5 px-3 text-right font-bold min-w-[160px] w-44 text-emerald-700 dark:text-emerald-400 bg-emerald-50/70 dark:bg-emerald-950/40 border-r border-neutral-300 dark:border-neutral-700 text-xs">
+                {/* Gaji Bersih (Netto) - Sticky Right */}
+                <td
+                    className={cn(
+                        'sticky z-20 py-1.5 px-3 text-right font-bold min-w-[150px] w-[150px] max-w-[150px] text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950 border-r border-neutral-300 dark:border-neutral-700 text-xs',
+                        isReadOnly ? 'right-0' : 'right-[48px]'
+                    )}
+                >
                     {formatCurrency(row.gaji_bersih)}
                 </td>
 
-                {/* Aksi Delete Baris */}
+                {/* Aksi Delete Baris - Sticky Right */}
                 {!isReadOnly && (
-                    <td className="py-1 px-1 text-center">
+                    <td className="sticky right-0 z-20 bg-white dark:bg-neutral-950 py-1 px-1 text-center w-12 min-w-[48px] max-w-[48px]">
                         <Can permission="penggajian.input-gaji">
                             <Button
                                 type="button"
@@ -418,13 +433,13 @@ export const SalaryInputGaji: React.FC = () => {
                     }
 
                     // Smart detection of pasted columns:
-                    // If user copied starting from "No" or "Nama":
-                    // If >= 21 columns (No + Nama + 19 components), skip 2 columns
-                    // If >= 20 columns (Nama + 19 components), skip 1 column
+                    // If user copied starting from "No", "Nama", or "NIP":
                     if (startColIndex === 0) {
-                        if (values.length >= 21) {
+                        if (values.length >= 23) {
+                            values = values.slice(3);
+                        } else if (values.length === 22) {
                             values = values.slice(2);
-                        } else if (values.length >= 20) {
+                        } else if (values.length === 21) {
                             values = values.slice(1);
                         }
                     }
@@ -616,7 +631,7 @@ export const SalaryInputGaji: React.FC = () => {
                     arisan_keluarga: 0,
                     denda_ngaji: 0,
                     kasbon: 0,
-            dana_sosial: 0,
+                    dana_sosial: 0,
                 })
             );
 
@@ -913,9 +928,6 @@ export const SalaryInputGaji: React.FC = () => {
                                     <th className="py-2.5 px-3 text-center min-w-[130px] w-32 bg-blue-50/70 dark:bg-blue-950/30 border-r border-neutral-200 dark:border-neutral-800">Jaspel Ralan</th>
                                     <th className="py-2.5 px-3 text-center min-w-[130px] w-32 bg-blue-50/70 dark:bg-blue-950/30 border-r border-neutral-200 dark:border-neutral-800">Ralan BPJS</th>
                                     <th className="py-2.5 px-3 text-center min-w-[130px] w-32 bg-blue-50/70 dark:bg-blue-950/30 border-r border-neutral-300 dark:border-neutral-700">Tugas Tambahan</th>
-                                    <th className="py-2.5 px-3 text-right min-w-[150px] w-40 bg-blue-100 dark:bg-blue-950/50 font-bold border-r border-neutral-300 dark:border-neutral-700 text-blue-900 dark:text-blue-300">
-                                        Total Bruto
-                                    </th>
 
                                     {/* 9 Komponen Potongan */}
                                     <th className="py-2.5 px-3 text-center min-w-[130px] w-32 bg-rose-50/70 dark:bg-rose-950/30 border-r border-neutral-200 dark:border-neutral-800">PPh 21</th>
@@ -927,16 +939,38 @@ export const SalaryInputGaji: React.FC = () => {
                                     <th className="py-2.5 px-3 text-center min-w-[130px] w-32 bg-rose-50/70 dark:bg-rose-950/30 border-r border-neutral-200 dark:border-neutral-800">Denda Ngaji</th>
                                     <th className="py-2.5 px-3 text-center min-w-[130px] w-32 bg-rose-50/70 dark:bg-rose-950/30 border-r border-neutral-200 dark:border-neutral-800">Kasbon</th>
                                     <th className="py-2.5 px-3 text-center min-w-[130px] w-32 bg-rose-50/70 dark:bg-rose-950/30 border-r border-neutral-300 dark:border-neutral-700">Dana Sosial</th>
-                                    <th className="py-2.5 px-3 text-right min-w-[150px] w-40 bg-rose-100 dark:bg-rose-950/50 font-bold border-r border-neutral-300 dark:border-neutral-700 text-rose-900 dark:text-rose-300">
+
+                                    {/* Sticky Right Summary Columns */}
+                                    <th
+                                        className={cn(
+                                            'sticky z-40 py-2.5 px-3 text-right min-w-[140px] w-[140px] max-w-[140px] bg-blue-100 dark:bg-blue-950 font-bold border-l border-r border-neutral-300 dark:border-neutral-700 text-blue-900 dark:text-blue-300',
+                                            isReadOnly ? 'right-[290px]' : 'right-[338px]'
+                                        )}
+                                    >
+                                        Total Bruto
+                                    </th>
+                                    <th
+                                        className={cn(
+                                            'sticky z-40 py-2.5 px-3 text-right min-w-[140px] w-[140px] max-w-[140px] bg-rose-100 dark:bg-rose-950 font-bold border-r border-neutral-300 dark:border-neutral-700 text-rose-900 dark:text-rose-300',
+                                            isReadOnly ? 'right-[150px]' : 'right-[198px]'
+                                        )}
+                                    >
                                         Total Potongan
                                     </th>
-
-                                    {/* Netto */}
-                                    <th className="py-2.5 px-3 text-right min-w-[160px] w-44 bg-emerald-100 dark:bg-emerald-950/50 font-bold border-r border-neutral-300 dark:border-neutral-700 text-emerald-900 dark:text-emerald-300">
+                                    <th
+                                        className={cn(
+                                            'sticky z-40 py-2.5 px-3 text-right min-w-[150px] w-[150px] max-w-[150px] bg-emerald-100 dark:bg-emerald-950 font-bold border-r border-neutral-300 dark:border-neutral-700 text-emerald-900 dark:text-emerald-300',
+                                            isReadOnly ? 'right-0' : 'right-[48px]'
+                                        )}
+                                    >
                                         Gaji Bersih (Netto)
                                     </th>
 
-                                    {!isReadOnly && <th className="py-2.5 px-2 min-w-[48px] w-12 text-center">Aksi</th>}
+                                    {!isReadOnly && (
+                                        <th className="sticky right-0 z-40 bg-neutral-100 dark:bg-neutral-900 py-2.5 px-2 min-w-[48px] w-12 max-w-[48px] text-center">
+                                            Aksi
+                                        </th>
+                                    )}
                                 </tr>
                             </thead>
                             <tbody className="font-mono divide-y divide-neutral-200 dark:divide-neutral-800">

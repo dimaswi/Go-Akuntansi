@@ -160,10 +160,8 @@ func (s *salaryService) GenerateSalaryTemplateXLSX(batchID uint, customRows []mo
     <col min="1" max="1" width="6" customWidth="1"/>
     <col min="2" max="2" width="34" customWidth="1"/>
     <col min="3" max="3" width="18" customWidth="1"/>
-    <col min="4" max="14" width="16" customWidth="1"/>
-    <col min="15" max="15" width="20" customWidth="1"/>
-    <col min="16" max="24" width="16" customWidth="1"/>
-    <col min="25" max="25" width="20" customWidth="1"/>
+    <col min="4" max="23" width="16" customWidth="1"/>
+    <col min="24" max="25" width="20" customWidth="1"/>
     <col min="26" max="26" width="22" customWidth="1"/>
   </cols>
   <sheetData>
@@ -185,16 +183,16 @@ func (s *salaryService) GenerateSalaryTemplateXLSX(batchID uint, customRows []mo
       <c r="L1" t="inlineStr" s="2"><is><t>JASPEL RALAN</t></is></c>
       <c r="M1" t="inlineStr" s="2"><is><t>RALAN BPJS</t></is></c>
       <c r="N1" t="inlineStr" s="2"><is><t>TUGAS TAMBAHAN</t></is></c>
-      <c r="O1" t="inlineStr" s="2"><is><t>TOTAL BRUTO</t></is></c>
-      <c r="P1" t="inlineStr" s="3"><is><t>PPH 21</t></is></c>
-      <c r="Q1" t="inlineStr" s="3"><is><t>INFAQ</t></is></c>
-      <c r="R1" t="inlineStr" s="3"><is><t>BPJS KES</t></is></c>
-      <c r="S1" t="inlineStr" s="3"><is><t>BPJS TK</t></is></c>
-      <c r="T1" t="inlineStr" s="3"><is><t>DENDA ABSEN</t></is></c>
-      <c r="U1" t="inlineStr" s="3"><is><t>ARISAN KEL</t></is></c>
-      <c r="V1" t="inlineStr" s="3"><is><t>DENDA NGAJI</t></is></c>
-      <c r="W1" t="inlineStr" s="3"><is><t>KASBON</t></is></c>
-      <c r="X1" t="inlineStr" s="3"><is><t>DANA SOSIAL</t></is></c>
+      <c r="O1" t="inlineStr" s="3"><is><t>PPH 21</t></is></c>
+      <c r="P1" t="inlineStr" s="3"><is><t>INFAQ</t></is></c>
+      <c r="Q1" t="inlineStr" s="3"><is><t>BPJS KES</t></is></c>
+      <c r="R1" t="inlineStr" s="3"><is><t>BPJS TK</t></is></c>
+      <c r="S1" t="inlineStr" s="3"><is><t>DENDA ABSEN</t></is></c>
+      <c r="T1" t="inlineStr" s="3"><is><t>ARISAN KEL</t></is></c>
+      <c r="U1" t="inlineStr" s="3"><is><t>DENDA NGAJI</t></is></c>
+      <c r="V1" t="inlineStr" s="3"><is><t>KASBON</t></is></c>
+      <c r="W1" t="inlineStr" s="3"><is><t>DANA SOSIAL</t></is></c>
+      <c r="X1" t="inlineStr" s="2"><is><t>TOTAL BRUTO</t></is></c>
       <c r="Y1" t="inlineStr" s="3"><is><t>TOTAL POTONGAN</t></is></c>
       <c r="Z1" t="inlineStr" s="1"><is><t>GAJI BERSIH (NETTO)</t></is></c>
     </row>
@@ -222,7 +220,7 @@ func (s *salaryService) GenerateSalaryTemplateXLSX(batchID uint, customRows []mo
       <c r="L%d" s="4"><v>%d</v></c>
       <c r="M%d" s="4"><v>%d</v></c>
       <c r="N%d" s="4"><v>%d</v></c>
-      <c r="O%d" s="6"><f>SUM(D%d:N%d)</f><v>%d</v></c>
+      <c r="O%d" s="4"><v>%d</v></c>
       <c r="P%d" s="4"><v>%d</v></c>
       <c r="Q%d" s="4"><v>%d</v></c>
       <c r="R%d" s="4"><v>%d</v></c>
@@ -231,9 +229,9 @@ func (s *salaryService) GenerateSalaryTemplateXLSX(batchID uint, customRows []mo
       <c r="U%d" s="4"><v>%d</v></c>
       <c r="V%d" s="4"><v>%d</v></c>
       <c r="W%d" s="4"><v>%d</v></c>
-      <c r="X%d" s="4"><v>%d</v></c>
-      <c r="Y%d" s="7"><f>SUM(P%d:X%d)</f><v>%d</v></c>
-      <c r="Z%d" s="8"><f>O%d-Y%d</f><v>%d</v></c>
+      <c r="X%d" s="6"><f>SUM(D%d:N%d)</f><v>%d</v></c>
+      <c r="Y%d" s="7"><f>SUM(O%d:W%d)</f><v>%d</v></c>
+      <c r="Z%d" s="8"><f>X%d-Y%d</f><v>%d</v></c>
     </row>
 `,
 			rNum,
@@ -251,7 +249,6 @@ func (s *salaryService) GenerateSalaryTemplateXLSX(batchID uint, customRows []mo
 			rNum, decVal(row.JasaPelayananRawatJalan),
 			rNum, decVal(row.JasaPelayananRawatJalanBPJS),
 			rNum, decVal(row.TugasTambahan),
-			rNum, rNum, rNum, decVal(row.TotalPendapatan),
 			rNum, decVal(row.PPh21),
 			rNum, decVal(row.Infaq),
 			rNum, decVal(row.BPJSKesehatan),
@@ -261,6 +258,7 @@ func (s *salaryService) GenerateSalaryTemplateXLSX(batchID uint, customRows []mo
 			rNum, decVal(row.DendaNgaji),
 			rNum, decVal(row.Kasbon),
 			rNum, decVal(row.DanaSosial),
+			rNum, rNum, rNum, decVal(row.TotalPendapatan),
 			rNum, rNum, rNum, decVal(row.TotalPotongan),
 			rNum, rNum, rNum, decVal(row.GajiBersih),
 		))
@@ -299,4 +297,3 @@ func (s *salaryService) GenerateSalaryTemplateXLSX(batchID uint, customRows []mo
 	filename := fmt.Sprintf("Format_Pengisian_Gaji_%s.xlsx", batch.BatchNumber)
 	return zipBuf.Bytes(), filename, nil
 }
-
